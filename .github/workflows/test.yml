@@ -1,0 +1,81 @@
+name: Test YouTube Download
+
+on:
+  workflow_dispatch:  # اجرا دستی
+  schedule:
+    - cron: '0 */6 * * *'  # هر ۶ ساعت
+
+jobs:
+  test-download:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install yt-dlp
+        run: pip install yt-dlp
+      
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Save cookies
+        run: |
+          cat > cookies.txt << 'COOKIES'
+          # Netscape HTTP Cookie File
+          .youtube.com	TRUE	/	TRUE	1800658314	VISITOR_PRIVACY_METADATA	CgJJVBIiEh4SHAsMDg8QERITFBUWFxgZGhscHR4fICEiIyQlJicgWg%3D%3D
+          .youtube.com	TRUE	/	TRUE	1819666272	__Secure-3PSID	g.a000Awnvyv-h9sXAyx6UajvcWCtR1FCH4F57WHy6VYFT6gc8Ves8RhJ_OAfCs6OY3qKmBf7s5QACgYKAYsSARcSFQHGX2Mi88dySrzncxYjdmYQAsr9yBoVAUF8yKqdgYw1FEWKhagPFSxv8CxL0076
+          .youtube.com	TRUE	/	TRUE	1785108030	GPS	1
+          .youtube.com	FALSE	/	FALSE	1816642315	SIDCC	AKEyXzX8LfDgXN-4ItroP6eVFkWiBByDyzULofBXqi-zjYNvetzhLwV9q_hnJIBLPGXz2Xli
+          .youtube.com	TRUE	/	TRUE	0	YSC	bwbU_bINEsY
+          .youtube.com	FALSE	/	FALSE	1819666272	SID	g.a000Awnvyv-h9sXAyx6UajvcWCtR1FCH4F57WHy6VYFT6gc8Ves8l6zugob6u-8WcprxSqtFCQACgYKAXoSARcSFQHGX2Mig56W-vJt1xZMxpXPfePyjRoVAUF8yKrqBBDSKCDTcu7RJE1KSRhd0076
+          .youtube.com	TRUE	/	TRUE	1816642272	__Secure-1PSIDTS	sidts-CjQBPWEu2SEYn3_nFa3d9V1cE523Lm4uA97XiDPU7GFZxkkFG5UrzcZZ3NR9zjtWNAOpsP-WEAA
+          .youtube.com	TRUE	/	TRUE	1785106922	CONSISTENCY	AHDYFaHihxPlqH-KSfrpfvp9Qj6BdPdYBamNPjcdEN0YR39nzpl_WC2LH9eC-0veN2qdqpfc_xzQr9fKZ6_DmCUrVN9QCZpC8Dmlqh4EcwFkEOqBKTlwwcNt1mQ
+          .youtube.com	TRUE	/	TRUE	1819666272	SAPISID	DDiIfqIyN8msqxTq/Akfe-LDg7wGD7jLG8
+          .youtube.com	TRUE	/	TRUE	1816642315	__Secure-1PSIDCC	AKEyXzVde8z0dDUxiH4WGwh6NFHeARor_myQnnTwOmmTi6fW2st1cRWs20Nzd27UdzVe9qVk
+          .youtube.com	TRUE	/	TRUE	1819666272	SSID	Al05SXF0S6ZIV-GlI
+          .youtube.com	TRUE	/	TRUE	1819666272	__Secure-1PAPISID	DDiIfqIyN8msqxTq/Akfe-LDg7wGD7jLG8
+          .youtube.com	TRUE	/	TRUE	1819666272	__Secure-1PSID	g.a000Awnvyv-h9sXAyx6UajvcWCtR1FCH4F57WHy6VYFT6gc8Ves8Eo06TrWiV1S5cBDgFxWpwwACgYKASYSARcSFQHGX2Mi0ff0V7jHkq4yzkrvhdwY8hoVAUF8yKop4jQa9wvhGa30aVkC9PxC0076
+          .youtube.com	TRUE	/	TRUE	1819666272	__Secure-3PAPISID	DDiIfqIyN8msqxTq/Akfe-LDg7wGD7jLG8
+          .youtube.com	TRUE	/	TRUE	1816642315	__Secure-3PSIDCC	AKEyXzWljKy18g4LMGS5ClDfAOCPQGBn1spHvjlFriGtLPOAyaM8O1Kh40PW5HBEDfK0oYLMdQ
+          .youtube.com	TRUE	/	TRUE	1816642272	__Secure-3PSIDTS	sidts-CjQBPWEu2SEYn3_nFa3d9V1cE523Lm4uA97XiDPU7GFZxkkFG5UrzcZZ3NR9zjtWNAOpsP-WEAA
+          .youtube.com	TRUE	/	TRUE	1800658228	__Secure-YNID	20.YT=Ydet9F28fPxPu9XpDcF81O-Dh7sb_qUBS5ztxYIwFTWfs-c7DLQ1gdr0d6Vgoqn3Ckt1h5iz3oH7OGjTPCbXYdW9U0MRFMeHLBsYkGdS4Hcq-B4SMjq6AerPmt-QtB5TKCaNMuHUGTMcrknrKNtKN-cMcWVw0cXzSpWnrvoptfFXnPk0jZrqO6X2BDXvHsEgz9B_x0Ni9tp6qLcm5U1sNJ1XH_lsaWvxm9nhrRImlBqGI23x5w49D0F5-hOnAZ8a3S0MaImKPJNwuC5uPqVOuOo-Iu7m4WkQjCzF5DExAcOW-lCNdm7NuYAf7N2YE61CVvOMqLCyo_p2xxus5joHng
+          .youtube.com	FALSE	/	FALSE	1819666272	APISID	urden4CKh9-LDzSD/AartV4FwGF0GLY0Of
+          .youtube.com	FALSE	/	TRUE	1819666272	HSID	AUvLqp-FkI3TmBIxd
+          .youtube.com	TRUE	/	TRUE	1819666273	LOGIN_INFO	AFmmF2swRAIgPmtGuTrMXBoy4nyBdSakVt5JFWFQvdPNlmDN9MBMEPkCIAMhLGEeRFq76Q5lWU0I7OvSDkxYPkpFPBsEEO9uo7BS:QUQ3MjNmeXpaVjBlYm00M0ltTzUyNGlXR1VzVWM3QW5xbENHOGc0N3FhaG8yaERtbDMwUk5zcnhyMW44Q2d0WmZ5dmE3LS1iZ3ZOcnh1c0JFRVB0eUQ5d2dlMTVrdWFGc0djZkI4c2NUc0lfblo5UXNHZGpVYlNzSXpJVjhGM1FIWU9SY1lsOE15bXlEM3YtZk1hUWlCTjZncWtRUVhjNHZB
+          .youtube.com	TRUE	/	TRUE	1819666315	PREF	f6=40000000&tz=Asia.Tehran
+          .youtube.com	TRUE	/	TRUE	1819234230	SOCS	CAISEwgDEgk5NTI1MDUxNDYaAmVuIAEaBgiAnJXTBg
+          .youtube.com	TRUE	/	TRUE	1800658314	VISITOR_INFO1_LIVE	E2b2G3SrgQM
+          COOKIES
+      
+      - name: Test yt-dlp
+        run: |
+          echo "=== Testing yt-dlp from GitHub Actions ==="
+          echo "IP Address:"
+          curl -s ifconfig.me
+          echo ""
+          echo ""
+          
+          echo "=== Testing with cookies ==="
+          yt-dlp --cookies cookies.txt --dump-json --no-download "https://youtu.be/d9n6cRNhFSc" 2>&1 | python3 -c "
+          import sys, json
+          try:
+              data = json.load(sys.stdin)
+              print(f'Title: {data.get(\"title\", \"N/A\")}')
+              print(f'Duration: {data.get(\"duration\", \"N/A\")} seconds')
+              print(f'Formats: {len(data.get(\"formats\", []))}')
+              print('SUCCESS!')
+          except:
+              print('JSON parse failed, checking raw output...')
+          "
+          
+          echo ""
+          echo "=== List formats ==="
+          yt-dlp --cookies cookies.txt --list-formats "https://youtu.be/d9n6cRNhFSc" 2>&1 | tail -15
